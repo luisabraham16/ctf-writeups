@@ -1,6 +1,6 @@
 # These are my personal CTF writeups and exploit scripts
 
-### Blog-like posts tracking external learning progress:
+### Other stuff:
  - [Kernel Exploitation](https://github.com/papichulo16/ctf-stuff/tree/main/learning_kernel_stuff)
  - [Embedded Hacking](https://github.com/papichulo16/ctf-stuff/tree/main/hardware-hacking)
 
