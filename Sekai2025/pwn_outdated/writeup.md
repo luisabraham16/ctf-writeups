@@ -70,5 +70,16 @@ This is very interesting because I have not seen any other architecture that I h
     # this calls 0x41414141
 ```
 
-From here I got stuck and was trying different things for a couple hours to see what worked but I couldn't get anything so I decided to go watch UFC. Either way I learned something pretty cool from this challenge and I am very glad I did it. I asked what the solution was and it was some wonky offsetting to get a libc leak through the GOT and then call system.
+From here I got stuck and was trying different things for a couple hours to see what worked but I couldn't get anything so I decided to go watch UFC. Either way I learned something pretty cool from this challenge. I then the next day after looking at the solution I realized that it was not only the functions that were using the table but also read only strings:
+```mips
+        00010b6c 10 00 dc 8f         lw         gp,local_38(s8)
+        00010b70 30 80 82 8f         lw         v0,-0x7fd0(gp)=>PTR_00030030           <======== PTR to the string
+        00010b74 14 11 44 24         addiu      a0,v0,0x1114
+        00010b78 7c 80 82 8f         lw         v0,-0x7f84(gp)=>-><EXTERNAL>::puts               = 00010c40
+        00010b7c 25 c8 40 00         or         t9,v0,zero
+        00010b80 00 00 19 f8         jialc      t9=><EXTERNAL>::puts,0x0                         int puts(char * __s)
+```
 
+With this I could of offset the GP a little more and would of written my own GOT and then had puts print out a value in the GOT to get a libc leak and then used the `exit()` call to call back to main and do this again but calling `system("/bin/sh)`. 
+
+If I would of noticed that the GOT had a pointer nearby that pointed to all of the strings, I would of friggin solved it in time :(. It's okay.
