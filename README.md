@@ -5,6 +5,7 @@
  - [Embedded Hacking](https://github.com/papichulo16/ctf-stuff/tree/main/hardware-hacking)
 
 ### The writeups are located here:
+ - [outdated](https://github.com/papichulo16/ctf-stuff/blob/main/Sekai2025/pwn_outdated/writeup.md): MIPS global pointer overwrite
  - [checksumz](https://github.com/papichulo16/ctf-stuff/blob/main/IrisCTF2025/checksumz/writeup.md): read/write on kernel heap then modprobe path overwrite
  - [screenwriter](https://github.com/papichulo16/ctf-stuff/blob/main/WargamesMYCTF/screenwriter/writeup.md): FSOP challenge
  - [library](https://github.com/papichulo16/ctf-stuff/tree/main/PwnSec/library/writeup.md): heap challenge with double pointers
