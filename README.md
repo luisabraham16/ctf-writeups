@@ -2,7 +2,6 @@
 
 ### Other stuff:
  - [Kernel Exploitation](https://github.com/papichulo16/ctf-stuff/tree/main/learning_kernel_stuff)
- - [Embedded Hacking](https://github.com/papichulo16/ctf-stuff/tree/main/hardware-hacking)
 
 ### The writeups are located here:
  - [outdated](https://github.com/papichulo16/ctf-stuff/blob/main/Sekai2025/pwn_outdated/writeup.md): MIPS global pointer overwrite
